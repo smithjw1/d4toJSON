@@ -10,12 +10,20 @@
     "convert": "node ./dist/convert.js"
   },
   "author": "Jacob Smith (jake@shoeinthedoor.com)",
-  "license": "ISC",
+  "license": "MIT",
   "devDependencies": {
     "@types/node": "^20.12.11",
     "typescript": "^5.4.5"
   },
   "dependencies": {
     "convert-csv-to-json": "^2.46.0"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/smithjw1/d4toJSON.git"
+  },
+  "bugs": {
+    "url": "https://github.com/smithjw1/d4toJSON/issues"
+  },
+  "homepage": "https://github.com/smithjw1/d4toJSON#readme"
 }
