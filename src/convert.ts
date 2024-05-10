@@ -1,4 +1,3 @@
-import csvToJson from "convert-csv-to-json"
 import { writeFileSync } from 'fs'
 import PublicGoogleSheetsParser  from 'public-google-sheets-parser'
 
@@ -6,6 +5,15 @@ interface ClassInformation {
   name: string
   subclass?: string
   levels?: number
+}
+
+interface TOCEntry {
+  buildNumber: number
+  name: string
+  overview: string
+  role: string
+  races: string[]
+  characterClasses: ClassInformation[]
 }
 
 const convertClass = (classString: string, buildNumber: number): ClassInformation[] => {
@@ -48,7 +56,7 @@ const convertClass = (classString: string, buildNumber: number): ClassInformatio
 }
 
 
-const convertRace = (raceString: string, buildNumber: number): string[] => {
+const convertRace = (raceString: string): string[] => {
   if (!raceString) {
     return []
   }
@@ -82,16 +90,28 @@ const spreadsheetId = '18lsjEdNIXayLCUsv9v-Afx-y3MEone2c2EGszBtGw8U'
 const parser = new PublicGoogleSheetsParser(spreadsheetId, { sheetName: 'Sheet1', useFormat: true })
 
 parser.parse().then((data) => {
-  const convertedJSON = data.map(entry => {
+  const convertedJSON: TOCEntry[] = data.map((entry: any):TOCEntry => {
+    if (
+       !entry['D&D Build #'] ||
+       !entry['Name/Link'] ||
+       !entry['Overview'] ||
+       !entry['Role'] ||
+       !entry['Race'] ||
+       !entry['Class (Subclass):# of Levels']
+    ) {
+      console.error('Spreadsheet has changed, this code may not be useful')
+      process.exit(1)
+    }
     const buildNumber = parseInt(entry['D&D Build #'])
     return {
       buildNumber,
       name: entry['Name/Link'],
       overview: entry['Overview'],
       role: entry['Role'],
-      races: convertRace(entry['Race'], buildNumber),
+      races: convertRace(entry['Race']),
       characterClasses: convertClass(entry['Class (Subclass):# of Levels'], buildNumber)
     }
   })
   writeFileSync('output.json', JSON.stringify(convertedJSON, null, 4))
+  console.info('Created output.json')
 })

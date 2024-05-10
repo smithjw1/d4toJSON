@@ -42,7 +42,7 @@ const convertClass = (classString, buildNumber) => {
     });
     return classInfo;
 };
-const convertRace = (raceString, buildNumber) => {
+const convertRace = (raceString) => {
     if (!raceString) {
         return [];
     }
@@ -69,17 +69,27 @@ const convertRace = (raceString, buildNumber) => {
 const spreadsheetId = '18lsjEdNIXayLCUsv9v-Afx-y3MEone2c2EGszBtGw8U';
 const parser = new public_google_sheets_parser_1.default(spreadsheetId, { sheetName: 'Sheet1', useFormat: true });
 parser.parse().then((data) => {
-    const convertedJSON = data.map(entry => {
+    const convertedJSON = data.map((entry) => {
+        if (!entry['D&D Build #'] ||
+            !entry['Name/Link'] ||
+            !entry['Overview'] ||
+            !entry['Role'] ||
+            !entry['Race'] ||
+            !entry['Class (Subclass):# of Levels']) {
+            console.error('Spreadsheet has changed, this code may not be useful');
+            process.exit(1);
+        }
         const buildNumber = parseInt(entry['D&D Build #']);
         return {
             buildNumber,
             name: entry['Name/Link'],
             overview: entry['Overview'],
             role: entry['Role'],
-            races: convertRace(entry['Race'], buildNumber),
+            races: convertRace(entry['Race']),
             characterClasses: convertClass(entry['Class (Subclass):# of Levels'], buildNumber)
         };
     });
     (0, fs_1.writeFileSync)('output.json', JSON.stringify(convertedJSON, null, 4));
+    console.info('Created output.json');
 });
 //# sourceMappingURL=convert.js.map

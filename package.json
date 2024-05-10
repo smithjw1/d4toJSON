@@ -16,7 +16,6 @@
     "typescript": "^5.4.5"
   },
   "dependencies": {
-    "convert-csv-to-json": "^2.46.0",
     "public-google-sheets-parser": "^1.5.4"
   },
   "repository": {
