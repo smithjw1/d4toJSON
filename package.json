@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "npx tsc",
-    "watch": "npx tsc -- watch",
+    "watch": "npx tsc --watch",
     "convert": "node ./dist/convert.js"
   },
   "author": "Jacob Smith (jake@shoeinthedoor.com)",
@@ -16,7 +16,8 @@
     "typescript": "^5.4.5"
   },
   "dependencies": {
-    "convert-csv-to-json": "^2.46.0"
+    "convert-csv-to-json": "^2.46.0",
+    "public-google-sheets-parser": "^1.5.4"
   },
   "repository": {
     "type": "git",

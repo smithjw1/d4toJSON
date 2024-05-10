@@ -3,9 +3,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const convert_csv_to_json_1 = __importDefault(require("convert-csv-to-json"));
 const fs_1 = require("fs");
+const public_google_sheets_parser_1 = __importDefault(require("public-google-sheets-parser"));
 const convertClass = (classString, buildNumber) => {
+    if (!classString) {
+        return [];
+    }
     const classes = classString.split(',');
     const classInfo = classes.map((singleClass) => {
         const regex = /(.*)\s\((.*)\):\s*(\d+)/;
@@ -40,6 +43,9 @@ const convertClass = (classString, buildNumber) => {
     return classInfo;
 };
 const convertRace = (raceString, buildNumber) => {
+    if (!raceString) {
+        return [];
+    }
     let races = [raceString];
     if (raceString.indexOf(' or ') !== -1) {
         races = raceString.split(' or ');
@@ -60,17 +66,20 @@ const convertRace = (raceString, buildNumber) => {
     });
     return raceInfo;
 };
-const rawJSON = convert_csv_to_json_1.default.fieldDelimiter(',').supportQuotedField(true).getJsonFromCsv("./input.csv");
-const convertedJSON = rawJSON.map(entry => {
-    const buildNumber = parseInt(entry['D&DBuild#']);
-    return {
-        buildNumber,
-        name: entry['Name/Link'],
-        overview: entry['Overview'],
-        role: entry['Role'],
-        races: convertRace(entry['Race'], buildNumber),
-        characterClasses: convertClass(entry['Class(Subclass):#ofLevels'], buildNumber)
-    };
+const spreadsheetId = '18lsjEdNIXayLCUsv9v-Afx-y3MEone2c2EGszBtGw8U';
+const parser = new public_google_sheets_parser_1.default(spreadsheetId, { sheetName: 'Sheet1', useFormat: true });
+parser.parse().then((data) => {
+    const convertedJSON = data.map(entry => {
+        const buildNumber = parseInt(entry['D&D Build #']);
+        return {
+            buildNumber,
+            name: entry['Name/Link'],
+            overview: entry['Overview'],
+            role: entry['Role'],
+            races: convertRace(entry['Race'], buildNumber),
+            characterClasses: convertClass(entry['Class (Subclass):# of Levels'], buildNumber)
+        };
+    });
+    (0, fs_1.writeFileSync)('output.json', JSON.stringify(convertedJSON, null, 4));
 });
-(0, fs_1.writeFileSync)('output.json', JSON.stringify(convertedJSON));
 //# sourceMappingURL=convert.js.map

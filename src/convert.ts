@@ -1,5 +1,6 @@
 import csvToJson from "convert-csv-to-json"
-import { writeFileSync } from 'fs';
+import { writeFileSync } from 'fs'
+import PublicGoogleSheetsParser  from 'public-google-sheets-parser'
 
 interface ClassInformation {
   name: string
@@ -7,9 +8,10 @@ interface ClassInformation {
   levels?: number
 }
 
-
-
 const convertClass = (classString: string, buildNumber: number): ClassInformation[] => {
+  if (!classString) {
+    return []
+  }
   const classes = classString.split(',')
   const classInfo = classes.map((singleClass: string) => {
     const regex = /(.*)\s\((.*)\):\s*(\d+)/;
@@ -47,7 +49,11 @@ const convertClass = (classString: string, buildNumber: number): ClassInformatio
 
 
 const convertRace = (raceString: string, buildNumber: number): string[] => {
+  if (!raceString) {
+    return []
+  }
   let races = [raceString]
+
   if (raceString.indexOf(' or ') !== -1) {
     races = raceString.split(' or ')
   }
@@ -72,17 +78,20 @@ const convertRace = (raceString: string, buildNumber: number): string[] => {
   return raceInfo
 }
 
-const rawJSON = csvToJson.fieldDelimiter(',').supportQuotedField(true).getJsonFromCsv("./input.csv")
-const convertedJSON = rawJSON.map(entry => {
-  const buildNumber = parseInt(entry['D&DBuild#'])
-  return {
-    buildNumber,
-    name: entry['Name/Link'],
-    overview: entry['Overview'],
-    role: entry['Role'],
-    races: convertRace(entry['Race'], buildNumber),
-    characterClasses: convertClass(entry['Class(Subclass):#ofLevels'], buildNumber)
-  }
-})
+const spreadsheetId = '18lsjEdNIXayLCUsv9v-Afx-y3MEone2c2EGszBtGw8U'
+const parser = new PublicGoogleSheetsParser(spreadsheetId, { sheetName: 'Sheet1', useFormat: true })
 
-writeFileSync('output.json', JSON.stringify(convertedJSON))
+parser.parse().then((data) => {
+  const convertedJSON = data.map(entry => {
+    const buildNumber = parseInt(entry['D&D Build #'])
+    return {
+      buildNumber,
+      name: entry['Name/Link'],
+      overview: entry['Overview'],
+      role: entry['Role'],
+      races: convertRace(entry['Race'], buildNumber),
+      characterClasses: convertClass(entry['Class (Subclass):# of Levels'], buildNumber)
+    }
+  })
+  writeFileSync('output.json', JSON.stringify(convertedJSON, null, 4))
+})
