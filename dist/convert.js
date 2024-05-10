@@ -19,7 +19,7 @@ const convertClass = (classString, buildNumber) => {
             };
         }
         else {
-            const noSubClassRegex = /(.*):(\d+)/;
+            const noSubClassRegex = /(.*):\s*(\d+)/;
             const noSubClassMatch = singleClass.match(noSubClassRegex);
             if (noSubClassMatch) {
                 const [, name, levels] = noSubClassMatch;

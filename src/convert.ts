@@ -22,7 +22,7 @@ const convertClass = (classString: string, buildNumber: number): ClassInformatio
         levels: parseInt(levels)
       }
     } else {
-       const noSubClassRegex = /(.*):(\d+)/;
+       const noSubClassRegex = /(.*):\s*(\d+)/;
         const noSubClassMatch = singleClass.match(noSubClassRegex);
         if (noSubClassMatch) {
           const [, name, levels] = noSubClassMatch;
