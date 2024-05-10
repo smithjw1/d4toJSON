@@ -4,7 +4,10 @@
   "description": "Convert d4 table of contents to JSON",
   "main": "convert.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "npx tsc",
+    "watch": "npx tsc -- watch",
+    "convert": "node ./dist/convert.js"
   },
   "author": "Jacob Smith (jake@shoeinthedoor.com)",
   "license": "ISC",
