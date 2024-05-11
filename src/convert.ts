@@ -91,6 +91,8 @@ const parser = new PublicGoogleSheetsParser(spreadsheetId, { sheetName: 'Sheet1'
 
 parser.parse().then((data) => {
   const convertedJSON: TOCEntry[] = data.map((entry: any):TOCEntry => {
+    /*
+    The below is too strict, but some gate like this will be useful.
     if (
        !entry['D&D Build #'] ||
        !entry['Name/Link'] ||
@@ -102,6 +104,7 @@ parser.parse().then((data) => {
       console.error('Spreadsheet has changed, this code may not be useful')
       process.exit(1)
     }
+    */
     const buildNumber = parseInt(entry['D&D Build #'])
     return {
       buildNumber,

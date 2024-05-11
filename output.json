@@ -1586,9 +1586,9 @@
                 "levels": 3
             },
             {
-                "name": " Paladin:(2)",
+                "name": " Paladin",
                 "subclass": null,
-                "levels": null
+                "levels": 2
             }
         ]
     },
@@ -3854,7 +3854,7 @@
         "overview": "The highest damage dealing ranged weapon user in 5e is… a caster. /eyeroll",
         "role": "Sustained DPR",
         "races": [
-            "Custom Lineage"
+            "V. Human"
         ],
         "characterClasses": [
             {

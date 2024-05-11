@@ -70,15 +70,20 @@ const spreadsheetId = '18lsjEdNIXayLCUsv9v-Afx-y3MEone2c2EGszBtGw8U';
 const parser = new public_google_sheets_parser_1.default(spreadsheetId, { sheetName: 'Sheet1', useFormat: true });
 parser.parse().then((data) => {
     const convertedJSON = data.map((entry) => {
-        if (!entry['D&D Build #'] ||
-            !entry['Name/Link'] ||
-            !entry['Overview'] ||
-            !entry['Role'] ||
-            !entry['Race'] ||
-            !entry['Class (Subclass):# of Levels']) {
-            console.error('Spreadsheet has changed, this code may not be useful');
-            process.exit(1);
+        /*
+        The below is too strict, but some gate like this will be useful.
+        if (
+           !entry['D&D Build #'] ||
+           !entry['Name/Link'] ||
+           !entry['Overview'] ||
+           !entry['Role'] ||
+           !entry['Race'] ||
+           !entry['Class (Subclass):# of Levels']
+        ) {
+          console.error('Spreadsheet has changed, this code may not be useful')
+          process.exit(1)
         }
+        */
         const buildNumber = parseInt(entry['D&D Build #']);
         return {
             buildNumber,
