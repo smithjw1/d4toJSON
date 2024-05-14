@@ -5,7 +5,7 @@
         "overview": "Polearm Master, Great Weapon Master, Darkness+Devil's Sight (or Shadow of Moil) to hit stuff HARD",
         "role": "Sustained DPR",
         "races": [
-            "V. Human (VH)"
+            "V. Human"
         ],
         "characterClasses": [
             {
@@ -317,7 +317,7 @@
         "overview": "Run up, attack, step away, enemy takes Booming Blade Damage and gets hit with pet attacks",
         "role": "Sustained DPR",
         "races": [
-            "Custom Lineage (CL)"
+            "Custom Lineage"
         ],
         "characterClasses": [
             {
@@ -3871,7 +3871,11 @@
     },
     {
         "buildNumber": 167,
-        "races": [],
+        "overview": "Trying to make the most out of Polymorph and also: Sidekicks!",
+        "role": "Sustained DPR",
+        "races": [
+            "Custom Lineage"
+        ],
         "characterClasses": []
     }
 ]

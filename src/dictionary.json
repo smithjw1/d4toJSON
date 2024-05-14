@@ -1,0 +1,11 @@
+{
+  "classes": {
+
+  },
+  "races": {
+    "VH": "V. Human",
+    "CL": "Custom Lineage",
+    "V. Human (VH)": "V. Human",
+    "Custom Lineage (CL)": "Custom Lineage"
+  }
+}

@@ -5,6 +5,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const fs_1 = require("fs");
 const public_google_sheets_parser_1 = __importDefault(require("public-google-sheets-parser"));
+const dictionary_json_1 = __importDefault(require("./dictionary.json"));
+var TranslationTypes;
+(function (TranslationTypes) {
+    TranslationTypes["Classes"] = "classes";
+    TranslationTypes["Races"] = "races";
+})(TranslationTypes || (TranslationTypes = {}));
 const convertClass = (classString, buildNumber) => {
     if (!classString) {
         return [];
@@ -42,6 +48,12 @@ const convertClass = (classString, buildNumber) => {
     });
     return classInfo;
 };
+const translate = (source, type) => {
+    if (source in dictionary_json_1.default[type]) {
+        return dictionary_json_1.default[type][source];
+    }
+    return source;
+};
 const convertRace = (raceString) => {
     if (!raceString) {
         return [];
@@ -54,13 +66,7 @@ const convertRace = (raceString) => {
         races = raceString.split(',');
     }
     const raceInfo = races.map((race) => {
-        let transRace = race.trim();
-        if (transRace === 'VH') {
-            transRace = "V. Human";
-        }
-        if (transRace === 'CL') {
-            transRace = 'Custom Lineage';
-        }
+        let transRace = translate(race.trim(), TranslationTypes.Races);
         transRace = transRace.replace(', or', '');
         return transRace;
     });
@@ -70,20 +76,6 @@ const spreadsheetId = '18lsjEdNIXayLCUsv9v-Afx-y3MEone2c2EGszBtGw8U';
 const parser = new public_google_sheets_parser_1.default(spreadsheetId, { sheetName: 'Sheet1', useFormat: true });
 parser.parse().then((data) => {
     const convertedJSON = data.map((entry) => {
-        /*
-        The below is too strict, but some gate like this will be useful.
-        if (
-           !entry['D&D Build #'] ||
-           !entry['Name/Link'] ||
-           !entry['Overview'] ||
-           !entry['Role'] ||
-           !entry['Race'] ||
-           !entry['Class (Subclass):# of Levels']
-        ) {
-          console.error('Spreadsheet has changed, this code may not be useful')
-          process.exit(1)
-        }
-        */
         const buildNumber = parseInt(entry['D&D Build #']);
         return {
             buildNumber,

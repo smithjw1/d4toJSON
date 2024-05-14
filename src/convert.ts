@@ -1,5 +1,7 @@
 import { writeFileSync } from 'fs'
 import PublicGoogleSheetsParser  from 'public-google-sheets-parser'
+import translationJSON from './dictionary.json'
+
 
 interface ClassInformation {
   name: string
@@ -14,6 +16,11 @@ interface TOCEntry {
   role: string
   races: string[]
   characterClasses: ClassInformation[]
+}
+
+enum TranslationTypes {
+  Classes = "classes",
+  Races = "races"
 }
 
 const convertClass = (classString: string, buildNumber: number): ClassInformation[] => {
@@ -56,6 +63,13 @@ const convertClass = (classString: string, buildNumber: number): ClassInformatio
 }
 
 
+const translate = (source: string, type: TranslationTypes): string => {
+  if(source in translationJSON[type]) {
+    return translationJSON[type][source]
+  }
+  return source
+}
+
 const convertRace = (raceString: string): string[] => {
   if (!raceString) {
     return []
@@ -71,13 +85,7 @@ const convertRace = (raceString: string): string[] => {
 
 
   const raceInfo = races.map((race: string) => {
-    let transRace = race.trim()
-    if (transRace === 'VH') {
-      transRace = "V. Human"
-    }
-    if (transRace === 'CL') {
-      transRace = 'Custom Lineage'
-    }
+    let transRace = translate(race.trim(), TranslationTypes.Races)
     transRace = transRace.replace(', or', '')
 
     return transRace
@@ -91,20 +99,7 @@ const parser = new PublicGoogleSheetsParser(spreadsheetId, { sheetName: 'Sheet1'
 
 parser.parse().then((data) => {
   const convertedJSON: TOCEntry[] = data.map((entry: any):TOCEntry => {
-    /*
-    The below is too strict, but some gate like this will be useful.
-    if (
-       !entry['D&D Build #'] ||
-       !entry['Name/Link'] ||
-       !entry['Overview'] ||
-       !entry['Role'] ||
-       !entry['Race'] ||
-       !entry['Class (Subclass):# of Levels']
-    ) {
-      console.error('Spreadsheet has changed, this code may not be useful')
-      process.exit(1)
-    }
-    */
+
     const buildNumber = parseInt(entry['D&D Build #'])
     return {
       buildNumber,
