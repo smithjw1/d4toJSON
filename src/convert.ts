@@ -20,10 +20,24 @@ interface TOCEntry {
 
 enum TranslationTypes {
   Classes = "classes",
-  Races = "races"
+  Races = "races",
+  Subclasses = "subclasses"
 }
 
-const convertClass = (classString: string, buildNumber: number): ClassInformation[] => {
+interface Stats {
+  races: any
+  classes: any
+}
+
+const stats:Stats = {
+  races: {},
+  classes: {}
+}
+
+
+const buildsToSkip: number[] = [126,168]
+
+const convertClass = (classString: string, buildNumber: number, stats: Stats): ClassInformation[] => {
   if (!classString) {
     return []
   }
@@ -34,8 +48,8 @@ const convertClass = (classString: string, buildNumber: number): ClassInformatio
     if (match) {
       const [, name, subclass, levels] = match;
       return {
-        name,
-        subclass,
+        name: translate(name, TranslationTypes.Classes),
+        subclass: translate(subclass, TranslationTypes.Subclasses),
         levels: parseInt(levels)
       }
     } else {
@@ -44,7 +58,7 @@ const convertClass = (classString: string, buildNumber: number): ClassInformatio
         if (noSubClassMatch) {
           const [, name, levels] = noSubClassMatch;
             return {
-              name,
+              name: translate(name, TranslationTypes.Classes),
               subclass: null,
               levels: parseInt(levels)
           }
@@ -53,24 +67,45 @@ const convertClass = (classString: string, buildNumber: number): ClassInformatio
 
     console.warn('Class parsing issue: ', buildNumber, " ", singleClass)
     return {
-      name: singleClass,
+      name: translate(singleClass, TranslationTypes.Classes),
       subclass: null,
       levels: null,
     }
 
   })
+  classInfo.forEach((entry: ClassInformation) => {
+    if (stats.classes[entry.name]) {
+      stats.classes[entry.name].total++
+      stats.classes[entry.name].totalLevels += entry.levels
+      if (stats.classes[entry.name][entry.subclass]) {
+        stats.classes[entry.name][entry.subclass]++
+      } else {
+          stats.classes[entry.name] = {
+            ...stats.classes[entry.name],
+            [entry.subclass]: 1
+          }
+        }
+    } else {
+      stats.classes[entry.name] = {
+        total: 1,
+        totalLevels: entry.levels,
+        [entry.subclass]: 1
+      }
+    }
+  })
+
   return classInfo
 }
 
 
 const translate = (source: string, type: TranslationTypes): string => {
-  if(source in translationJSON[type]) {
-    return translationJSON[type][source]
+  if(source.trim() in translationJSON[type]) {
+    return translationJSON[type][source.trim()]
   }
-  return source
+  return source.trim()
 }
 
-const convertRace = (raceString: string): string[] => {
+const convertRace = (raceString: string, stats: Stats): string[] => {
   if (!raceString) {
     return []
   }
@@ -85,9 +120,13 @@ const convertRace = (raceString: string): string[] => {
 
 
   const raceInfo = races.map((race: string) => {
-    let transRace = translate(race.trim(), TranslationTypes.Races)
+    let transRace = translate(race, TranslationTypes.Races)
     transRace = transRace.replace(', or', '')
-
+    if (stats.races[transRace]) {
+      stats.races[transRace]++
+    } else {
+      stats.races[transRace] = 1
+    }
     return transRace
   })
 
@@ -101,15 +140,20 @@ parser.parse().then((data) => {
   const convertedJSON: TOCEntry[] = data.map((entry: any):TOCEntry => {
 
     const buildNumber = parseInt(entry['D&D Build #'])
+    if (buildsToSkip.includes(buildNumber)) {
+      return
+    }
+
     return {
       buildNumber,
       name: entry['Name/Link'],
       overview: entry['Overview'],
       role: entry['Role'],
-      races: convertRace(entry['Race']),
-      characterClasses: convertClass(entry['Class (Subclass):# of Levels'], buildNumber)
+      races: convertRace(entry['Race'], stats),
+      characterClasses: convertClass(entry['Class (Subclass):# of Levels'], buildNumber, stats)
     }
-  })
+  }).filter(entry => entry)
   writeFileSync('output.json', JSON.stringify(convertedJSON, null, 4))
-  console.info('Created output.json')
+  writeFileSync('stats.json', JSON.stringify(stats, null, 4))
+  console.info('Created JSON')
 })

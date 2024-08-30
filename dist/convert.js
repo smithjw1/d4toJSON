@@ -10,8 +10,14 @@ var TranslationTypes;
 (function (TranslationTypes) {
     TranslationTypes["Classes"] = "classes";
     TranslationTypes["Races"] = "races";
+    TranslationTypes["Subclasses"] = "subclasses";
 })(TranslationTypes || (TranslationTypes = {}));
-const convertClass = (classString, buildNumber) => {
+const stats = {
+    races: {},
+    classes: {}
+};
+const buildsToSkip = [126, 168];
+const convertClass = (classString, buildNumber, stats) => {
     if (!classString) {
         return [];
     }
@@ -22,8 +28,8 @@ const convertClass = (classString, buildNumber) => {
         if (match) {
             const [, name, subclass, levels] = match;
             return {
-                name,
-                subclass,
+                name: translate(name, TranslationTypes.Classes),
+                subclass: translate(subclass, TranslationTypes.Subclasses),
                 levels: parseInt(levels)
             };
         }
@@ -33,7 +39,7 @@ const convertClass = (classString, buildNumber) => {
             if (noSubClassMatch) {
                 const [, name, levels] = noSubClassMatch;
                 return {
-                    name,
+                    name: translate(name, TranslationTypes.Classes),
                     subclass: null,
                     levels: parseInt(levels)
                 };
@@ -41,20 +47,39 @@ const convertClass = (classString, buildNumber) => {
         }
         console.warn('Class parsing issue: ', buildNumber, " ", singleClass);
         return {
-            name: singleClass,
+            name: translate(singleClass, TranslationTypes.Classes),
             subclass: null,
             levels: null,
         };
     });
+    classInfo.forEach((entry) => {
+        if (stats.classes[entry.name]) {
+            stats.classes[entry.name].total++;
+            stats.classes[entry.name].totalLevels += entry.levels;
+            if (stats.classes[entry.name][entry.subclass]) {
+                stats.classes[entry.name][entry.subclass]++;
+            }
+            else {
+                stats.classes[entry.name] = Object.assign(Object.assign({}, stats.classes[entry.name]), { [entry.subclass]: 1 });
+            }
+        }
+        else {
+            stats.classes[entry.name] = {
+                total: 1,
+                totalLevels: entry.levels,
+                [entry.subclass]: 1
+            };
+        }
+    });
     return classInfo;
 };
 const translate = (source, type) => {
-    if (source in dictionary_json_1.default[type]) {
-        return dictionary_json_1.default[type][source];
+    if (source.trim() in dictionary_json_1.default[type]) {
+        return dictionary_json_1.default[type][source.trim()];
     }
-    return source;
+    return source.trim();
 };
-const convertRace = (raceString) => {
+const convertRace = (raceString, stats) => {
     if (!raceString) {
         return [];
     }
@@ -66,8 +91,14 @@ const convertRace = (raceString) => {
         races = raceString.split(',');
     }
     const raceInfo = races.map((race) => {
-        let transRace = translate(race.trim(), TranslationTypes.Races);
+        let transRace = translate(race, TranslationTypes.Races);
         transRace = transRace.replace(', or', '');
+        if (stats.races[transRace]) {
+            stats.races[transRace]++;
+        }
+        else {
+            stats.races[transRace] = 1;
+        }
         return transRace;
     });
     return raceInfo;
@@ -77,16 +108,20 @@ const parser = new public_google_sheets_parser_1.default(spreadsheetId, { sheetN
 parser.parse().then((data) => {
     const convertedJSON = data.map((entry) => {
         const buildNumber = parseInt(entry['D&D Build #']);
+        if (buildsToSkip.includes(buildNumber)) {
+            return;
+        }
         return {
             buildNumber,
             name: entry['Name/Link'],
             overview: entry['Overview'],
             role: entry['Role'],
-            races: convertRace(entry['Race']),
-            characterClasses: convertClass(entry['Class (Subclass):# of Levels'], buildNumber)
+            races: convertRace(entry['Race'], stats),
+            characterClasses: convertClass(entry['Class (Subclass):# of Levels'], buildNumber, stats)
         };
-    });
+    }).filter(entry => entry);
     (0, fs_1.writeFileSync)('output.json', JSON.stringify(convertedJSON, null, 4));
-    console.info('Created output.json');
+    (0, fs_1.writeFileSync)('stats.json', JSON.stringify(stats, null, 4));
+    console.info('Created JSON');
 });
 //# sourceMappingURL=convert.js.map
