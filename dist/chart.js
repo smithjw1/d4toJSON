@@ -79,7 +79,7 @@ const htmlContent = `
 </body>
 </html>
 `;
-fs.writeFile('data.html', htmlContent, (err) => {
+fs.writeFile('./public/data.html', htmlContent, (err) => {
     if (err) {
         console.error('Error writing file:', err);
     }

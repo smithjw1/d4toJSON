@@ -2,11 +2,6 @@ import * as fs from 'fs';
 // @ts-ignore:next-line
 import statsJSON from './stats.json'
 
-interface ClassStats {
-
-}
-
-
 const raceArray:[string, number][] = Object.entries(statsJSON.races);
 raceArray.sort((a, b) => b[1] - a[1]);
 
@@ -21,7 +16,7 @@ Object.keys(statsJSON.classes).forEach(key => {
   classOverview.push([key, statsJSON.classes[key].total, statsJSON.classes[key].totalLevels])
   Object.keys(statsJSON.classes[key]).forEach(subKey => {
     if(!["total","totalLevels","null", "N/A"].includes(subKey)) {
-      subClasses.push([key + ' - ' + subKey, statsJSON.classes[key][subKey])
+      subClasses.push([key + ' - ' + subKey, statsJSON.classes[key][subKey]])
     }
   })
 })
@@ -64,7 +59,7 @@ const htmlContent = `
 </html>
 `;
 
-fs.writeFile('data.html', htmlContent, (err) => {
+fs.writeFile('./public/data.html', htmlContent, (err) => {
     if (err) {
         console.error('Error writing file:', err);
     } else {
