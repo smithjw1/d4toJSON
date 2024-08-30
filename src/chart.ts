@@ -41,8 +41,9 @@ const htmlContent = `
 <html>
 <head>
     <title>d4 Data</title>
+    <link rel="stylesheet" href="https://unpkg.com/marx-css/css/marx.min.css">
 </head>
-<body>
+<body style="margin:1vh 10%">
     <h1>Data from D4</h1>
     <h2>Races</h2>
     <table>
